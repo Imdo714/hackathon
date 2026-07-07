@@ -186,3 +186,29 @@ def get_all_records(db: Session = Depends(get_db)):
         "total_count": len(result),
         "records": result
     }
+
+@app.post(
+    "/upload_image",
+    summary="단일 이미지 단순 업로드 API",
+    description="왜곡 처리나 DB 저장 없이, 이미지를 그대로 ImgBB 서버에 업로드하고 생성된 이미지 URL만 즉시 반환합니다.",
+    tags=["Image Warping & Storage"]
+)
+async def upload_single_image(
+    file: UploadFile = File(..., description="업로드할 이미지 파일")
+):
+    try:
+        # 1. 파일 비동기 읽기
+        image_bytes = await file.read()
+        
+        # 2. ImgBB 업로드 헬퍼 함수 재사용
+        image_url = await upload_to_imgbb(image_bytes)
+        
+        # 3. URL 결과 반환
+        return JSONResponse(content={
+            "message": "이미지가 성공적으로 업로드되었습니다.",
+            "url": image_url
+        })
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"이미지 업로드 중 오류가 발생했습니다: {str(e)}")
