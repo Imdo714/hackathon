@@ -10,6 +10,7 @@ import httpx
 import base64
 from fastapi import FastAPI, File, UploadFile, Form, HTTPException, Depends
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from contextlib import asynccontextmanager
 
@@ -48,6 +49,15 @@ app = FastAPI(
     version="1.1.0",
     openapi_tags=tags_metadata,
     lifespan=lifespan
+)
+
+# 모든 도메인(Origin)에서 이 API에 접근할 수 있도록 CORS 권한을 완전 허용합니다.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # 모든 프론트엔드 주소 허용
+    allow_credentials=True,
+    allow_methods=["*"],  # 모든 HTTP 메서드(GET, POST, OPTIONS 등) 허용
+    allow_headers=["*"],  # 모든 HTTP 헤더 허용
 )
 
 async def upload_to_imgbb(image_bytes: bytes) -> str:
